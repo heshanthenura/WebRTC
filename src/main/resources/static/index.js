@@ -12,36 +12,38 @@ let remoteID;
 let localID;
 let stompClient;
 
+
+// ICE Server Configurations
 const iceServers = {
-    iceServer:{
-        urls:"stun:stun.l.google.com:19302"
+    iceServer: {
+        urls: "stun:stun.l.google.com:19302"
     }
 }
 
 localPeer = new RTCPeerConnection(iceServers)
 
-// document.addEventListener("DOMContentLoaded", () => {
 
-    navigator.mediaDevices.getUserMedia({video: true, audio: true})
-        .then(stream => {
-            localStream = stream
-            // alert(stream.getTracks()[0]);
-            console.log(stream.getTracks()[0])
-            console.log(stream.getTracks()[1])
-            console.log(localStream.getTracks()[0])
-            console.log(localStream.getTracks()[1])
-            localVideo.srcObject = stream;
-            // access granted, stream is the webcam stream
-        })
-        .catch(error => {
-            // access denied or error occurred
-            console.log(error)
-        });
-// })
+navigator.mediaDevices.getUserMedia({video: true, audio: true})
+    .then(stream => {
+        localStream = stream
+
+        // console.log(stream.getTracks()[0])
+        // console.log(stream.getTracks()[1])
+        // console.log(localStream.getTracks()[0])
+        // console.log(localStream.getTracks()[1])
+
+        localVideo.srcObject = stream;
+        // access granted, stream is the webcam stream
+    })
+    .catch(error => {
+        // access denied or error occurred
+        console.log(error)
+    });
 
 
 connectBtn.onclick = () => {
-    var socket = new SockJS('/websocket',{debug: false});
+    // Connect to Websocket Server
+    var socket = new SockJS('/websocket', {debug: false});
     stompClient = Stomp.over(socket);
     localID = localIdInp.value
     console.log("My ID: " + localID)
@@ -49,6 +51,7 @@ connectBtn.onclick = () => {
 
         console.log(frame)
 
+        // Subscribe to testing URL not very important
         stompClient.subscribe('/topic/testServer', function (test) {
             console.log('Received: ' + test.body);
         });
@@ -58,35 +61,42 @@ connectBtn.onclick = () => {
             remoteID = call.body;
             console.log("Remote ID: " + call.body)
 
-            localPeer.ontrack = (event)=>{
-                // alert("Track + event ",event.streams.length)
-                // alert(JSON.stringify(event))
+            localPeer.ontrack = (event) => {
+                // Setting Remote stream in remote video element
                 remoteVideo.srcObject = event.streams[0]
             }
 
 
-            localPeer.onicecandidate = (event)=>{
-                if(event.candidate){
+            localPeer.onicecandidate = (event) => {
+                if (event.candidate) {
                     var candidate = {
-                        type:"candidate",
+                        type: "candidate",
                         lable: event.candidate.sdpMLineIndex,
-                        id:event.candidate.candidate,
+                        id: event.candidate.candidate,
                     }
                     console.log("Sending Candidate")
                     console.log(candidate)
-                    stompClient.send("/app/candidate",{},JSON.stringify({"toUser":call.body,"fromUser":localID,"candidate":candidate}))
+                    stompClient.send("/app/candidate", {}, JSON.stringify({
+                        "toUser": call.body,
+                        "fromUser": localID,
+                        "candidate": candidate
+                    }))
                 }
             }
 
+            // Adding Audio and Video Local Peer
             localStream.getTracks().forEach(track => {
                 localPeer.addTrack(track, localStream);
             });
 
-            // localPeer.addTrack(localStream.getTracks()[0],localStream)
-            localPeer.createOffer().then(description=>{
+            localPeer.createOffer().then(description => {
                 localPeer.setLocalDescription(description);
-                console.log("Setting Description"+description);
-                stompClient.send("/app/offer",{},JSON.stringify({"toUser":call.body,"fromUser":localID,"offer": description}))
+                console.log("Setting Description" + description);
+                stompClient.send("/app/offer", {}, JSON.stringify({
+                    "toUser": call.body,
+                    "fromUser": localID,
+                    "offer": description
+                }))
             })
         });
 
@@ -95,35 +105,43 @@ connectBtn.onclick = () => {
             var o = JSON.parse(offer.body)["offer"]
             console.log(offer.body)
             console.log(new RTCSessionDescription(o))
-            console.log(typeof (new RTCSessionDescription(o)) )
+            console.log(typeof (new RTCSessionDescription(o)))
 
-            localPeer.ontrack = (event)=>{
-
-                // alert("Track + event ",event.streams.length)
+            localPeer.ontrack = (event) => {
                 remoteVideo.srcObject = event.streams[0]
             }
-            localPeer.onicecandidate = (event)=>{
-                if(event.candidate){
+            localPeer.onicecandidate = (event) => {
+                if (event.candidate) {
                     var candidate = {
-                        type:"candidate",
+                        type: "candidate",
                         lable: event.candidate.sdpMLineIndex,
-                        id:event.candidate.candidate,
+                        id: event.candidate.candidate,
                     }
                     console.log("Sending Candidate")
                     console.log(candidate)
-                    stompClient.send("/app/candidate",{},JSON.stringify({"toUser":remoteID,"fromUser":localID,"candidate":candidate}))
+                    stompClient.send("/app/candidate", {}, JSON.stringify({
+                        "toUser": remoteID,
+                        "fromUser": localID,
+                        "candidate": candidate
+                    }))
                 }
             }
+
+            // Adding Audio and Video Local Peer
             localStream.getTracks().forEach(track => {
                 localPeer.addTrack(track, localStream);
             });
-            // localPeer.addTrack(localStream.getTracks()[0],localStream)
+
             localPeer.setRemoteDescription(new RTCSessionDescription(o))
-            localPeer.createAnswer().then(description =>{
+            localPeer.createAnswer().then(description => {
                 localPeer.setLocalDescription(description)
                 console.log("Setting Local Description")
                 console.log(description)
-                stompClient.send("/app/answer",{},JSON.stringify({"toUser":remoteID,"fromUser":localID,"answer":description}));
+                stompClient.send("/app/answer", {}, JSON.stringify({
+                    "toUser": remoteID,
+                    "fromUser": localID,
+                    "answer": description
+                }));
 
             })
         });
@@ -143,8 +161,8 @@ connectBtn.onclick = () => {
             console.log(o["lable"])
             console.log(o["id"])
             var iceCandidate = new RTCIceCandidate({
-                sdpMLineIndex:o["lable"],
-                candidate:o["id"],
+                sdpMLineIndex: o["lable"],
+                candidate: o["id"],
             })
             localPeer.addIceCandidate(iceCandidate)
         });
