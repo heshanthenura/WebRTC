@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebRTC Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js" integrity="sha512-1QvjE7BtotQjkq8PxLeF6P46gEpBRXuskzIVgjFpekzFVF4yjRgrQvTG1MTOJ3yQgvTteKAcO7DSZI92+u/yZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<style>
+    video{
+        width: 400px;
+        height: 400px;
+        background-color: black;
+    }
+</style>
+<h1>WebRTC Test</h1>
+<video id="localVideo" autoplay muted></video>
+<video id="remoteVideo" autoplay></video>
+<fieldset>
+    <input type="text" name="localId" id="localId">
+    <button id="connectBtn">Connect</button>
+</fieldset>
+<fieldset>
+    <input type="text" name="remoteId" id="remoteId">
+    <button id="callBtn">call</button>
+</fieldset>
+<button id="testConnection">Test Connection</button>
+<script th:src="@{index.js}"></script>
+</body>
+</html>
