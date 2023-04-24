@@ -6,7 +6,7 @@
 
 <ul>
     <li><a href="https://webrtc.org/"> WebRTC</a></li>
-    <li><a href="https://spring.io/guides/gs/messaging-stomp-websocket/"> Springboot WebSocket as Signalling Server</a></li>
+    <li><a href="https://spring.io/guides/gs/messaging-stomp-websocket/">Springboot WebSocket</a> as Signalling Server</li>
     <li> SockJS <a href="https://cdnjs.com/libraries/sockjs-client">CDN LINK</a> </li>
     <li> StompJS <a href="https://cdnjs.com/libraries/stomp.js">CDN LINK</a> </li>
 </ul>
